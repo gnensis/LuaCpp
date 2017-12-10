@@ -194,6 +194,80 @@ int calledByLuaReturnTable(lua_State* L)
 	return 1;
 }
 
+int getValueFromLua(lua_State* lua)
+{
+	printf("Enter callLuaTest\n");
+	printf("top is %d\n", lua_gettop(lua));
+	//Get variable from Lua
+	lua_getglobal(lua, "luaStr");
+	printf("top is %d\n", lua_gettop(lua));
+	printf("luaStr:%s\n", lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	printf("top is %d\n", lua_gettop(lua));
+
+	//Get Table from Lua
+	lua_getglobal(lua, "luaTable");		//push luaTable to top
+	printf("top is %d\n", lua_gettop(lua));
+	lua_getfield(lua, -1, "name");		//push name to top
+	printf("top is %d\n", lua_gettop(lua));
+	printf("luaTable.name:%s\n", lua_tostring(lua, -1));
+	lua_pop(lua, 1);					//pop name from top
+	printf("top is %d\n", lua_gettop(lua));
+
+	lua_getfield(lua, -1, "age");		//push age to top
+	printf("top is %d\n", lua_gettop(lua));
+	printf("luaTable.age:%d\n", lua_tointeger(lua, -1));
+	lua_pop(lua, 1);					//pop age from top
+	printf("top is %d\n", lua_gettop(lua));
+
+	lua_getfield(lua, -1, "isMale");	//push isMale to top
+	printf("top is %d\n", lua_gettop(lua));
+	printf("luaTable.isMale:%d\n", lua_toboolean(lua, -1));
+	lua_pop(lua, 2);					//pop isMale and luaTable from top
+	printf("top is %d\n", lua_gettop(lua));
+
+	return 0;
+}
+
+int transferValueToLua(lua_State* lua)
+{
+	//Cpp Transfer variable to Lua
+	lua_pushstring(lua, "This is a String from Cpp");
+	printf("top is %d after lua_pushstring(lua, \"This is a String from Cpp\")\n", lua_gettop(lua));
+	lua_setglobal(lua, "cppStr");
+	printf("top is %d after lua_setglobal(lua, \"cppStr\")\n", lua_gettop(lua));
+	printf("\n");
+
+	//Cpp Transfer Table to Lua
+	lua_newtable(lua);
+	printf("top is %d after lua_newtable(lua)\n", lua_gettop(lua));
+	lua_pushstring(lua, "name");
+	printf("top is %d after lua_pushstring(lua, \"name\")\n", lua_gettop(lua));
+	lua_pushstring(lua, "LingHuchong");
+	printf("top is %d after lua_pushstring(lua, \"LingHuchong\")\n", lua_gettop(lua));
+	lua_settable(lua, -3);
+	printf("top is %d after lua_settable(lua, -3)\n", lua_gettop(lua));
+
+	lua_pushstring(lua, "age");
+	printf("top is %d after lua_pushstring(lua, \"age\")\n", lua_gettop(lua));
+	lua_pushinteger(lua, 20);
+	printf("top is %d after lua_pushinteger(lua, 20)\n", lua_gettop(lua));
+	lua_settable(lua, -3);
+	printf("top is %d after lua_settable(lua, -3)\n", lua_gettop(lua));
+
+	lua_pushstring(lua, "isMale");
+	printf("top is %d after lua_pushstring(lua, \"isMale\")\n", lua_gettop(lua));
+	lua_pushboolean(lua, 1);
+	printf("top is %d after lua_pushboolean(lua, 1)\n", lua_gettop(lua));
+	lua_settable(lua, -3);
+	printf("top is %d after lua_settable(lua, -3)\n", lua_gettop(lua));
+	lua_setglobal(lua, "cppTable");
+	printf("top is %d after lua_setglobal(lua, \"cppTable\")\n", lua_gettop(lua));
+	printf("\n");
+
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	int err = 0;
@@ -203,6 +277,7 @@ int main(int argc, char* argv[])
 	luaopen_string(lua);
 	luaopen_table(lua);
 
+	//Register Cpp function to Lua
 	lua_register(lua, "calledByLua", calledByLua);
 	lua_register(lua, "calledByLuaArray", calledByLuaArray);
 	lua_register(lua, "calledByLuaTable", calledByLuaTable);
@@ -210,6 +285,7 @@ int main(int argc, char* argv[])
 	lua_register(lua, "calledByLuaReturn", calledByLuaReturn);
 	lua_register(lua, "calledByLuaReturnTable", calledByLuaReturnTable);
 
+	//
 	err = luaL_loadfile(lua, "main.lua");
 	if(err)
 	{
@@ -218,15 +294,126 @@ int main(int argc, char* argv[])
 		goto EXIT;
 	}
 
+	transferValueToLua(lua);
 	err = lua_pcall(lua, 0, 0, 0);
 	if(err)
 	{
 		const char* errStr = lua_tostring(lua, -1);
 		printf("Lua run error: %s\n", errStr);
+		lua_pop(lua, -1);	//Pop err message from Top
 		goto EXIT;
 	}
 
+	//
+	getValueFromLua(lua);
+
+	////Call Lua Function without Parameter
+	printf("top is %d before lua_getglobal(lua, \"luaFunction01\")\n", lua_gettop(lua));
+	lua_getglobal(lua, "luaFunction01");
+	printf("top is %d after lua_getglobal(lua, \"luaFunction01\")\n", lua_gettop(lua));
+	err = lua_pcall(lua, 0, 0, 0);
+	printf("top is %d after err = lua_pcall(lua, 0, 0, 0)\n", lua_gettop(lua));
+	if(err)
+	{
+		const char* errStr = lua_tostring(lua, -1);
+		printf("Run Lua function luaFunction01 error: %s\n", errStr);
+		lua_pop(lua, -1);	//Pop err message from Top
+		goto EXIT;
+	}
+
+	//Call Lua Function with a Parameter
+	lua_getglobal(lua, "luaFunction02");
+	lua_pushstring(lua, "parameter From cpp");
+	err = lua_pcall(lua, 1, 0, 0);
+	if(err)
+	{
+		const char* errStr = lua_tostring(lua, -1);
+		printf("Run Lua function luaFunction02 error: %s\n", errStr);
+		lua_pop(lua, -1);
+		goto EXIT;
+	}
+
+	//Call Lua Function with a Parameter and Get the Return Value
+	lua_getglobal(lua, "luaFunction03");
+	lua_pushstring(lua, "parameter From cpp");
+	err = lua_pcall(lua, 1, 1, 0);
+	if(err)
+	{
+		const char* errStr = lua_tostring(lua, -1);
+		printf("Run Lua function luaFunction03 error: %s\n", errStr);
+		lua_pop(lua, -1);
+		goto EXIT;
+	}
+	else
+	{
+		printf("luaFunction03 return:%s\n", lua_tostring(lua, -1));
+		lua_pop(lua, -1);
+	}
+
+	//
+	//Call Lua Function with a Parameter and Get the Return Value
+	printf("Top is %d befor lua_getglobal(lua, \"luaErrorProcessFunction\")\n", lua_gettop(lua));
+	int luaErrFun = lua_gettop(lua);
+	lua_getglobal(lua, "luaErrorProcessFunction");
+	luaErrFun++;
+	lua_getglobal(lua, "luaFunction04");
+	lua_pushstring(lua, "parameter From cpp");
+	printf("Top is %d befor lua_pcall(lua, 1, 1, luaErrFun)\n", lua_gettop(lua));
+	err = lua_pcall(lua, 1, 1, luaErrFun);
+	if(err)
+	{
+		//const char* errStr = lua_tostring(lua, -1);
+		//printf("Run Lua function luaFunction03 error: %s\n", errStr);
+		//lua_pop(lua, -1);
+		//goto EXIT;
+	}
+	else
+	{
+		printf("luaFunction03 return:%s\n", lua_tostring(lua, -1));
+		lua_pop(lua, -1);
+	}
+
+
+	//Transfer a table to Lua Function
+	lua_getglobal(lua, "luaFunction05");
+	lua_pushstring(lua, "parameter From cpp");
+	lua_newtable(lua);
+	lua_pushstring(lua, "name");
+	lua_pushstring(lua, "XieXun");
+	lua_settable(lua, -3);
+	lua_pushstring(lua, "age");
+	lua_pushinteger(lua, 88);
+	lua_settable(lua, -3);
+	lua_pushstring(lua, "isMale");
+	lua_pushboolean(lua, true);
+	lua_settable(lua, -3);
+	err = lua_pcall(lua, 2, 1, 0);
+	if(err)
+	{
+		const char* errStr = lua_tostring(lua, -1);
+		printf("Run Lua function luaFunction05 error: %s\n", errStr);
+		lua_pop(lua, -1);
+		goto EXIT;
+	}
+	else
+	{
+		lua_getfield(lua, -1, "name");
+		printf("return.name:%s\n", lua_tostring(lua, -1));
+		lua_pop(lua, -2);
+		lua_getfield(lua, -1, "age");
+		printf("return.age:%d\n", lua_tointeger(lua, -1));
+		lua_pop(lua, -2);
+		lua_getfield(lua, -1, "isMale");
+		printf("return.isMale:%d\n", lua_toboolean(lua, -1));
+		lua_pop(lua, -2);
+	}
+
+	
+
 EXIT:
 	getchar();
+
+	lua_close(lua);
+
 	return 0;
 }
