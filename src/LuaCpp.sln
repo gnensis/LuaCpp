@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaDll", "LuaDll\LuaDll.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaHello", "LuaHello\LuaHello.vcxproj", "{3BBBB41A-80DE-4115-A2D4-C91A3808E0BD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LuaMFCDialog", "LuaMFCDialog\LuaMFCDialog.vcxproj", "{A9A285EB-8859-4A65-A614-62456C4625B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -31,6 +33,10 @@ Global
 		{3BBBB41A-80DE-4115-A2D4-C91A3808E0BD}.Debug|Win32.Build.0 = Debug|Win32
 		{3BBBB41A-80DE-4115-A2D4-C91A3808E0BD}.Release|Win32.ActiveCfg = Release|Win32
 		{3BBBB41A-80DE-4115-A2D4-C91A3808E0BD}.Release|Win32.Build.0 = Release|Win32
+		{A9A285EB-8859-4A65-A614-62456C4625B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A9A285EB-8859-4A65-A614-62456C4625B7}.Debug|Win32.Build.0 = Debug|Win32
+		{A9A285EB-8859-4A65-A614-62456C4625B7}.Release|Win32.ActiveCfg = Release|Win32
+		{A9A285EB-8859-4A65-A614-62456C4625B7}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
